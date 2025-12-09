@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Stats Manager</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .card { border: none; shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card-header { background-color: #0d6efd; color: white; font-weight: bold; }
+        .nav-tabs .nav-link.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+        .nav-tabs .nav-link { color: #495057; }
+        .stat-card { transition: transform 0.2s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/"><i class="fas fa-football-ball me-2"></i>NFL Database Manager</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Main Navigation Tabs -->
+    <ul class="nav nav-pills nav-fill mb-4" id="mainTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if not active_tab or active_tab == 'stats' %}active{% endif %}" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats-content" type="button">
+                <i class="fas fa-chart-bar me-2"></i>Statistics
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'team' %}active{% endif %}" id="team-tab" data-bs-toggle="tab" data-bs-target="#team-content" type="button">
+                <i class="fas fa-users me-2"></i>Team Center
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'player' %}active{% endif %}" id="player-tab" data-bs-toggle="tab" data-bs-target="#player-content" type="button">
+                <i class="fas fa-user-astronaut me-2"></i>Player Lookup
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin-content" type="button">
+                <i class="fas fa-cogs me-2"></i>Admin / Manage
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="mainTabContent">
+        
+        <!-- ================= STATS TAB ================= -->
+        <div class="tab-pane fade {% if not active_tab or active_tab == 'stats' %}show active{% endif %}" id="stats-content">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="/stats/top_qbs" class="btn btn-outline-primary">Top QBs (Yards)</a>
+                        <a href="/stats/top_rbs" class="btn btn-outline-primary">Top RBs (Yards)</a>
+                        <a href="/stats/top_wrs" class="btn btn-outline-primary">Top WRs (Yards)</a>
+                        <a href="/stats/all_time_tds" class="btn btn-outline-success">All-Time TDs</a>
+                        <a href="/stats/lowest_int" class="btn btn-outline-info">Lowest Int Avg</a>
+                        <a href="/stats/division_winners" class="btn btn-outline-warning">Division Winners</a>
+                        <a href="/stats/best_coach" class="btn btn-outline-secondary">Top Coaches</a>
+                    </div>
+                </div>
+            </div>
+ 
+            {% if stat_type in ['top_qbs', 'top_rbs', 'top_wrs', 'division_winners'] %}
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                <select id="seasonInput" class="form-select" style="width: 120px;">
+                    {% for yr in range(2018, 2025) %}
+                        <option value="{{ yr }}" {% if yr == season %}selected{% endif %}>{{ yr }}</option>
+                    {% endfor %}
+                </select>
+                <div class="border rounded px-3 py-1 bg-light text-center">
+                    Season Year
+                </div>
+            </div>
+
+            <script>
+            document.getElementById('seasonInput')?.addEventListener('change', function() {
+                const selectedSeason = this.value;
+                const currentStatType = "{{ stat_type }}";
+                window.location.href = `/stats/${currentStatType}?season=${selectedSeason}`;
+            });
+            </script>
+            {% endif %}
+
+
+            {% if stats_data %}
+                {% if stat_type == 'best_coach' %}
+                    <div class="card">
+                        <div class="card-header">{{ stats_title }}</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            {% for h in stats_headers %}
+                                                <th>{{ h }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in stats_data %}
+                                        <tr>
+                                            <td>{{ row[0] }}</td> <!-- Coach Name -->
+                                            <td>{{ row[1] }}</td> <!-- Team -->
+                                            <td>{{ row[2] }}</td> <!-- Wins -->
+                                            <td>{{ row[3] }}</td> <!-- Losses -->
+                                            <td>{{ row[4] }}</td> <!-- Super Bowl Wins -->
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                {% elif stat_type == 'division_winners' %}
+                <!-- ===================== DIVISION WINNERS CARD LAYOUT ===================== -->
+                <div class="row mt-3">
+
+                    {% for row in stats_data %}
+                    <div class="col-md-4">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white text-center">
+                                <h5 class="mb-0">{{row[3]}} {{row[2]}} Winner</h5>
+                            </div>
+
+                            <div class="card-body">
+                                <h4 class="card-title text-center">{{ row[0] }}</h4>
+
+                                <ul class="list-group list-group-flush mt-3">
+                                    <li class="list-group-item"><strong>Conference:</strong> {{ row[2] }}</li>
+                                    <li class="list-group-item"><strong>Division:</strong> {{ row[3] }}</li>
+                                    <li class="list-group-item"><strong>Coach:</strong> {{ row[4] }}</li>
+                                    <li class="list-group-item"><strong>Wins:</strong> {{ row[5] }}</li>
+                                    <li class="list-group-item"><strong>Total Yards:</strong> {{ row[6] }} yards</li>
+                                    <li class="list-group-item"><strong>Total TDs:</strong> {{ row[7] }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+                <!-- ======================================================================= -->
+
+                {% else %}
+
+                <div class="card">
+                    <div class="card-header">{{ stats_title }}</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        {% for h in stats_headers %}
+                                        <th>{{ h }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in stats_data %}
+                                    <tr>
+                                        <td>{{ row['player_id'] }}</td>
+                                        <td>{{ row['player_name'] }}</td>
+
+                                        {% if stats_title.startswith("QBs with Lowest Interception") %}
+                                            <td>{{ "%.2f"|format(row['avg_interceptions']) }}</td>
+                                            <td>{{ row['total_touchdowns'] }}</td>
+                                        {% else %}
+                                            <td>
+                                                {% if row['total_passing_yards'] %}
+                                                    {{ row['total_passing_yards'] }}
+                                                {% elif row['total_rushing_yards'] %}
+                                                    {{ row['total_rushing_yards'] }}
+                                                {% elif row['total_receiving_yards'] %}
+                                                    {{ row['total_receiving_yards'] }}
+                                                {% elif row['total_touchdowns'] %}
+                                                    {{ row['total_touchdowns'] }}
+                                                {% elif row['avg_interceptions'] %}
+                                                    {{ "%.2f"|format(row['avg_interceptions']) }} ({{ row['total_touchdowns'] }} TDs)
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {% endif %}
+
+            {% else %}
+
+            <div class="text-center text-muted py-5">
+                <h4>Select a category above to view statistics.</h4>
+            </div>
+
+            {% endif %}
+        </div>
+
+        <!-- ================= TEAM TAB ================= -->
+        <div class="tab-pane fade {% if active_tab == 'team' %}show active{% endif %}" id="team-content">
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <form action="/team_lookup" method="POST" class="d-flex gap-2">
+                                <input type="text" name="team_ticker" class="form-control" placeholder="Team (e.g., SF, KC)" required maxlength="3" style="text-transform:uppercase">
+                                <input type="number" name="season" class="form-control" placeholder="Year" value="2024" required>
+                                <button type="submit" class="btn btn-primary">Go</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if team_searched %}
+            <div class="row">
+                <!-- Record Card -->
+                <div class="col-md-4">
+                    <div class="card text-center bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ team_searched }} {{ season_searched }}</h5>
+                            <h2 class="display-4 fw-bold">{{ record['wins'] }} - {{ record['losses'] }}</h2>
+                            <p class="text-muted">Win - Loss</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Schedule Table -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">Season Schedule</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Wk</th>
+                                        <th>Away</th>
+                                        <th>Home</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for game in schedule %}
+                                    <tr>
+                                        <td>{{ game['week'] }}</td>
+                                        <td class="{% if game['away_team'] == team_searched %}fw-bold text-primary{% endif %}">{{ game['away_team'] }}</td>
+                                        <td class="{% if game['home_team'] == team_searched %}fw-bold text-primary{% endif %}">{{ game['home_team'] }}</td>
+                                        <td>{{ game['season_type'] }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="4" class="text-center">No games found.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ================= PLAYER TAB ================= -->
+        <div class="tab-pane fade {% if active_tab == 'player' %}show active{% endif %}" id="player-content">
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-6">
+                    <form action="/player_lookup" method="POST" class="d-flex gap-2">
+                        <input type="text" name="player_name" class="form-control" placeholder="Enter Player Name..." required>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if player_search_result %}
+            <div class="row">
+                <!-- Player Info & Career Stats -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3>{{ player_search_result['player_name'] }}</h3>
+                            <p class="badge bg-secondary">{{ player_search_result['position'] }}</p>
+                            <hr>
+                            <p class="text-muted">ID: {{ player_search_result['player_id'] }}</p>
+                            
+                            {% if career_stats %}
+                            <ul class="list-group list-group-flush text-start">
+                                {% if player_search_result['position'] == 'QB' %}
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Pass Yds:</span> <strong>{{ career_stats['total_passing_yards'] }}</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Pass TDs:</span> <strong>{{ career_stats['total_pass_touchdowns'] }}</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Ints:</span> <strong>{{ career_stats['total_interceptions'] }}</strong>
+                                    </li>
+                                {% elif player_search_result['position'] == 'RB' %}
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Rush Yds:</span> <strong>{{ career_stats['total_rushing_yards'] }}</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Rush TDs:</span> <strong>{{ career_stats['total_rush_touchdowns'] }}</strong>
+                                    </li>
+                                {% elif player_search_result['position'] == 'WR' %}
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Rec Yds:</span> <strong>{{ career_stats['total_receiving_yards'] }}</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Rec TDs:</span> <strong>{{ career_stats['total_receiving_touchdowns'] }}</strong>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matchup History -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">Matchup History</div>
+                        <div class="card-body p-0 table-responsive" style="max-height: 400px;">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Wk</th>
+                                        <th>Opponent</th>
+                                        <th>Result</th>
+                                        {% if player_search_result['position'] == 'QB' %}
+                                            <th>Pass Yds</th>
+                                        {% elif player_search_result['position'] == 'RB' %}
+                                            <th>Rush Yds</th>
+                                        {% elif player_search_result['position'] == 'WR' %}
+                                            <th>Rec Yds</th>
+                                        {% else %}
+                                            <th>Stats</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for match in matchup_history %}
+                                    <tr>
+                                        <td>{{ match['season'] }}</td>
+                                        <td>{{ match['week'] }}</td>
+                                        <td>{{ match['opponent'] }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if match['game_result'] == 'Win' %}success{% else %}danger{% endif %}">
+                                                {{ match['game_result'] }}
+                                            </span>
+                                        </td>
+                                        {% if player_search_result['position'] == 'QB' %}
+                                            <td>{{ match['passing_yards'] }}</td>
+                                        {% elif player_search_result['position'] == 'RB' %}
+                                            <td>{{ match['rushing_yards'] }}</td>
+                                        {% elif player_search_result['position'] == 'WR' %}
+                                            <td>{{ match['receiving_yards'] }}</td>
+                                        {% else %}
+                                            <td>-</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                    {% if matchup_history|length == 0 %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No matchup history found.</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- ================= ADMIN TAB ================= -->
+        <div class="tab-pane fade" id="admin-content">
+            <div class="row">
+                <!-- ADD PLAYER FORM -->
+                <div class="col-md-6">
+                    <div class="card border-success h-100">
+                        <div class="card-header bg-success text-white">Add New Player</div>
+                        <div class="card-body">
+                            <form action="/add_player" method="POST">
+                                <div class="row g-2">
+                                    <div class="col-6"><input type="text" name="player_id" class="form-control" placeholder="ID (e.g. 00-12345)" required></div>
+                                    <div class="col-6"><input type="text" name="player_name" class="form-control" placeholder="Full Name" required></div>
+                                    <div class="col-4"><input type="text" name="team" class="form-control" placeholder="Team" required maxlength="3"></div>
+                                    <div class="col-4"><input type="text" name="position" class="form-control" placeholder="Pos" required></div>
+                                    <div class="col-4"><input type="number" name="season" class="form-control" value="2024"></div>
+                                    <!-- Optional fields hidden or simplified for demo -->
+                                    <div class="col-6"><input type="number" name="height" class="form-control" placeholder="Height (in)"></div>
+                                    <div class="col-6"><input type="number" name="weight" class="form-control" placeholder="Weight (lbs)"></div>
+                                </div>
+                                <button type="submit" class="btn btn-success mt-3 w-100">Add Player</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPDATE / DELETE -->
+                <div class="col-md-6">
+                    <!-- Update -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-warning text-dark">Update Player</div>
+                        <div class="card-body">
+                            <form action="/update_player" method="POST" class="row g-2 align-items-center">
+                                <div class="col-12">
+                                    <input type="text" name="player_id" class="form-control" placeholder="Player ID to Update" required>
+                                </div>
+                                <div class="col-4">
+                                    <select name="update_action" class="form-select">
+                                        <option value="team">Move Team</option>
+                                        <option value="position">Change Pos</option>
+                                        <option value="weight">Set Weight</option>
+                                    </select>
+                                </div>
+                                <div class="col-8">
+                                    <input type="text" name="new_value" class="form-control" placeholder="New Value" required>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-warning w-100">Update</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Delete -->
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">Delete Player</div>
+                        <div class="card-body">
+                            <form action="/delete_player" method="POST" onsubmit="return confirm('Are you sure? This deletes stats and history.');">
+                                <div class="input-group">
+                                    <input type="text" name="player_id" class="form-control" placeholder="Player ID to Delete" required>
+                                    <button class="btn btn-danger" type="submit">Delete</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

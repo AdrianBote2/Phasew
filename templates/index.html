@@ -298,45 +298,77 @@
             <div class="row">
                 <!-- Player Info & Career Stats -->
                 <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h3>{{ player_search_result['player_name'] }}</h3>
-                            <p class="badge bg-secondary">{{ player_search_result['position'] }}</p>
-                            <hr>
-                            <p class="text-muted">ID: {{ player_search_result['player_id'] }}</p>
-                            
-                            {% if career_stats %}
-                            <ul class="list-group list-group-flush text-start">
-                                {% if player_search_result['position'] == 'QB' %}
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Pass Yds:</span> <strong>{{ career_stats['total_passing_yards'] }}</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Pass TDs:</span> <strong>{{ career_stats['total_pass_touchdowns'] }}</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Ints:</span> <strong>{{ career_stats['total_interceptions'] }}</strong>
-                                    </li>
-                                {% elif player_search_result['position'] == 'RB' %}
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Rush Yds:</span> <strong>{{ career_stats['total_rushing_yards'] }}</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Rush TDs:</span> <strong>{{ career_stats['total_rush_touchdowns'] }}</strong>
-                                    </li>
-                                {% elif player_search_result['position'] == 'WR' %}
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Rec Yds:</span> <strong>{{ career_stats['total_receiving_yards'] }}</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Rec TDs:</span> <strong>{{ career_stats['total_receiving_touchdowns'] }}</strong>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <h3>{{ player_search_result['player_name'] }}</h3>
+            <p class="badge bg-secondary">{{ player_search_result['position'] }}</p>
+            <hr>
+            <p class="text-muted mb-1">ID: {{ player_search_result['player_id'] }}</p>
+            
+            <div class="mb-3 small">
+    <div class="row g-0">
+        <div class="col-6 text-end pe-2 border-end">
+            <strong>Height:</strong> {{ player_search_result['height'] }}"<br>
+            <strong>Weight:</strong> {{ player_search_result['weight'] }} lbs
+        </div>
+        <div class="col-6 ps-2 text-start">
+            <strong>Born:</strong> {{ player_search_result['birth_year'] }}<br>
+            <strong>Draft:</strong> {{ player_search_result['draft_year'] }} (Pick {{ player_search_result['draft_ovr'] }})
+        </div>
+    </div>
+</div>
+
+            {% if player_teams %}
+            <div class="mb-3">
+                <small class="text-muted"><strong>Career Path:</strong></small><br>
+                {% for t in player_teams %}
+                    <span class="badge bg-light text-dark border">{{ t.team }} ('{{ (t.year_signed|string)[2:] }})</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if career_stats %}
+            <ul class="list-group list-group-flush text-start">
+                <li class="list-group-item d-flex justify-content-between bg-light">
+                    <span>Games Played:</span> <strong>{{ career_stats['total_games_played'] }}</strong>
+                </li>
+
+                {% if player_search_result['position'] == 'QB' %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Pass Yds:</span> <strong>{{ career_stats['total_passing_yards'] }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Pass TDs:</span> <strong>{{ career_stats['total_pass_tds'] }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Ints:</span> <strong>{{ career_stats['total_interceptions'] }}</strong>
+                    </li>
+                {% elif player_search_result['position'] == 'RB' %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Rush Yds:</span> <strong>{{ career_stats['total_rushing_yards'] }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Rush TDs:</span> <strong>{{ career_stats['total_rush_tds'] }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Fumbles:</span> <strong>{{ career_stats['total_fumbles'] }}</strong>
+                    </li>
+                {% elif player_search_result['position'] in ['WR', 'TE'] %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Rec Yds:</span> <strong>{{ career_stats['total_receiving_yards'] }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Rec TDs:</span> <strong>{{ career_stats['total_receiving_tds'] }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Receptions:</span> <strong>{{ career_stats['total_receptions'] }}</strong>
+                    </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
                 <!-- Matchup History -->
                 <div class="col-md-8">

@@ -99,30 +99,50 @@ def team_lookup():
 
 @app.route('/player_lookup', methods=['POST'])
 def player_lookup():
-    """Handles searching for a player and showing their details."""
+    """Handles searching for a player and showing their details using getPlayerCareerDetails."""
     conn = get_db()
     search_term = request.form.get('player_name')
     
-    # 1. Try to find the ID first
+    # 1. Find the ID and basic info
     players = db.getPlayerIdByName(conn, search_term)
     
     if not players:
         flash(f"No player found with name '{search_term}'", "danger")
         return redirect(url_for('index'))
     
-    # Assuming we take the first match
-    player_id = players[0]['player_id']
-    real_name = players[0]['player_name']
+    # Take the first match
+    player_data = players[0]
+    player_id = player_data['player_id']
+    position = player_data['position']
     
-    # 2. Get Career Stats
-    career_stats = db.playerQBCareerStats(conn, player_id)
+    # 2. Determine which stats to fetch based on Position
+    # Default flags
+    inc_pass = False
+    inc_rush = True     # Most positions can record a rush
+    inc_rec = False
+    inc_turn = True     # Fumbles happen to everyone
     
-    # 3. Get Matchup History
+    if position == 'QB':
+        inc_pass = True
+        inc_rec = False # QBs rarely catch, but you can set True if you want
+    elif position in ['RB', 'WR', 'TE']:
+        inc_rec = True
+        
+    # 3. Get Detailed Career Stats (New Function Usage)
+    # Returns dict: {'bio': {...}, 'teams': [...], 'career_stats': {...}}
+    details = db.getPlayerCareerDetails(conn, player_id, 
+                                        include_passing=inc_pass, 
+                                        include_rushing=inc_rush, 
+                                        include_receiving=inc_rec, 
+                                        include_turnovers=inc_turn)
+    
+    # 4. Get Matchup History
     history = db.get_player_matchup_history(conn, player_id)
     
     return render_template('index.html', 
-                           player_search_result=players[0],
-                           career_stats=career_stats[0] if career_stats else None,
+                           player_search_result=details['bio'], # <--- FIX: Use the full bio
+                           career_stats=details['career_stats'] if details else None,
+                           player_teams=details['teams'] if details else [],
                            matchup_history=history,
                            active_tab='player')
 

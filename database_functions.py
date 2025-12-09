@@ -645,6 +645,115 @@ def best_coach(conn):
     cur.execute(sql)
     return cur.fetchall()
 
+def getPlayerCareerDetails(_conn, player_id, include_passing=False, include_rushing=False, include_receiving=False, include_turnovers=False):
+    """
+    Returns a dictionary containing:
+    - 'bio': All columns from the player table.
+    - 'teams': List of teams played for and the year they first signed/played.
+    - 'career_stats': Total games played and aggregated stats based on booleans provided.
+    """
+    result = {
+        "bio": {},
+        "teams": [],
+        "career_stats": {"total_games_played": 0}
+    }
+
+    try:
+        cur = _conn.cursor()
+
+        # ---------------------------------------------------------
+        # 1. GET PLAYER BIO
+        # ---------------------------------------------------------
+        # [cite_start]Retrieves all columns from the players table [cite: 4, 5, 6, 7]
+        sql_bio = "SELECT * FROM players WHERE player_id = ?;"
+        cur.execute(sql_bio, (player_id,))
+        bio_row = cur.fetchone()
+
+        if bio_row:
+            # Convert sqlite3.Row object to a standard dictionary
+            result["bio"] = dict(bio_row)
+        else:
+            print(f"Player {player_id} not found.")
+            return None
+
+        # ---------------------------------------------------------
+        # 2. GET TEAM HISTORY (Year Signed)
+        # ---------------------------------------------------------
+        # [cite_start]Uses player_history to find the earliest season (min) a player appeared for each team [cite: 13, 14, 15]
+        sql_teams = """
+        SELECT team, MIN(season) as year_signed
+        FROM player_history
+        WHERE player_id = ?
+        GROUP BY team
+        ORDER BY year_signed ASC;
+        """
+        cur.execute(sql_teams, (player_id,))
+        team_rows = cur.fetchall()
+        
+        # Format as a list of dictionaries for readability
+        for row in team_rows:
+            result["teams"].append({
+                "team": row["team"], 
+                "year_signed": row["year_signed"]
+            })
+
+        # ---------------------------------------------------------
+        # 3. GET CAREER TOTALS & GAMES PLAYED
+        # ---------------------------------------------------------
+        # [cite_start]Calculates total games and aggregates specific stats from player_game_stats [cite: 19, 20, 21, 22]
+        
+        # Base selection for games played
+        select_clause = "COUNT(*) as games_played"
+        
+        # Dynamically add aggregations based on booleans
+        if include_passing:
+            select_clause += ", SUM(passing_yards) as total_passing_yards, SUM(pass_touchdown) as total_pass_tds"
+        
+        if include_rushing:
+            select_clause += ", SUM(rushing_yards) as total_rushing_yards, SUM(rush_touchdown) as total_rush_tds"
+            
+        if include_receiving:
+            select_clause += ", SUM(receiving_yards) as total_receiving_yards, SUM(receiving_touchdown) as total_receiving_tds, SUM(receptions) as total_receptions"
+            
+        if include_turnovers:
+            select_clause += ", SUM(interception) as total_interceptions, SUM(fumble) as total_fumbles, SUM(fumble_lost) as total_fumbles_lost"
+
+        sql_stats = f"SELECT {select_clause} FROM player_game_stats WHERE player_id = ?;"
+        
+        cur.execute(sql_stats, (player_id,))
+        stats_row = cur.fetchone()
+
+        if stats_row:
+            # Populate the career_stats dictionary
+            result["career_stats"]["total_games_played"] = stats_row["games_played"]
+            
+            # Helper to safely add stats (handling None if sum returns NULL)
+            def safe_add(key):
+                if key in stats_row.keys():
+                    result["career_stats"][key] = stats_row[key] if stats_row[key] is not None else 0
+
+            # Add the requested stats to the result
+            if include_passing:
+                safe_add("total_passing_yards")
+                safe_add("total_pass_tds")
+            if include_rushing:
+                safe_add("total_rushing_yards")
+                safe_add("total_rush_tds")
+            if include_receiving:
+                safe_add("total_receiving_yards")
+                safe_add("total_receiving_tds")
+                safe_add("total_receptions")
+            if include_turnovers:
+                safe_add("total_interceptions")
+                safe_add("total_fumbles")
+                safe_add("total_fumbles_lost")
+
+        return result
+
+    except Error as e:
+        print(f"Error in getPlayerCareerDetails: {e}")
+        return None
+
 
 # ==========================================
 # TEST FUNCTIONS

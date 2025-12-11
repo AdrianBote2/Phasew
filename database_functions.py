@@ -30,6 +30,27 @@ def closeConnection(_conn, _dbFile):
 # PLAYER MANAGEMENT
 # ==========================================
 
+def addGame(_conn, game_id, season, week, season_type, away_team, home_team, home_win):
+    """
+    Inserts a record into the 'games' table.
+    
+    _conn: Database connection object.
+    home_win: 1 for home win, 0 for home loss/tie.
+    """
+    sql = """
+    INSERT INTO games (game_id, season, week, season_type, away_team, home_team, home_win)
+    VALUES (?, ?, ?, ?, ?, ?, ?);
+    """
+    try:
+        cur = _conn.cursor()
+        cur.execute(sql, (game_id, season, week, season_type, away_team, home_team, home_win))
+        _conn.commit()
+        print(f"Success: Added game {game_id}")
+        return True
+    except Error as e:
+        print(f"Error in addGame: {e}")
+        return False
+
 def addPlayer(_conn, player_id, player_name, team, birth_year, draft_year, draft_ovr, height, weight, position, season_year, week=1):
     # Split into two separate executions to use parameterized queries safely
     sql_player = """

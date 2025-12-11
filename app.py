@@ -150,6 +150,47 @@ def player_lookup():
 # MANAGEMENT ACTIONS (Add/Update/Delete)
 # ---------------------------------------------------------------------
 
+@app.route('/add_game', methods=['POST'])
+def add_game_route():
+    """Handles adding a new game record to the GAME table."""
+    conn = get_db()
+    data = request.form
+    
+    try:
+        # 1. Type Casting
+        home_score = int(data['home_score'])
+        away_score = int(data['away_score'])
+        season = int(data['season'])
+        week = int(data['week'])
+        season_type = data['season_type'].upper()
+        
+        # 2. Determine Win/Loss Status (home_win)
+        home_win = 1 if home_score > away_score else 0
+            
+        # 3. Construct the game_id
+        game_id = f"{season}_{str(week).zfill(2)}_{season_type}_{data['away_team'].upper()}_{data['home_team'].upper()}"
+
+        success = db.addGame(
+            conn,
+            game_id, 
+            season,
+            week,
+            season_type,
+            data['away_team'].upper(),
+            data['home_team'].upper(),
+            home_win 
+        )
+        
+        if success:
+            flash(f"✅ Game Added: **{data['away_team']}** ({away_score}) vs **{data['home_team']}** ({home_score}) in Week {week}.", "success")
+        else:
+            flash("❌ Error Adding Game. Possible duplicate Game ID.", "danger")
+
+    except Exception as e:
+        flash(f"⚠️ Error processing game data: {e}", "danger")
+    
+    return redirect(url_for('index'))
+
 @app.route('/add_player', methods=['POST'])
 def add_player_route():
     conn = get_db()

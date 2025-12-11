@@ -462,46 +462,6 @@
 
                 <div class="col-md-12 mt-4">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="card border-primary mb-3">
-                                <div class="card-header bg-primary text-white">Add Game Stats (Player Matchup)</div>
-                                <div class="card-body">
-                                    <form action="/add_game_stats" method="POST">
-                                        <div class="row g-2">
-                                            <div class="col-6"><input type="text" name="player_id" class="form-control" placeholder="Player ID (e.g., 00-12345)" required></div>
-                                            <div class="col-6"><input type="text" name="opponent_team" class="form-control" placeholder="Opponent Team (e.g., NE)" required maxlength="3"></div>
-                                            <div class="col-4"><input type="number" name="season" class="form-control" value="2024" placeholder="Season Year" required></div>
-                                            <div class="col-4"><input type="number" name="week" class="form-control" placeholder="Week" required></div>
-                                            <div class="col-4">
-                                                <select name="game_result" class="form-select" required>
-                                                    <option value="" disabled selected>Result</option>
-                                                    <option value="Win">Win</option>
-                                                    <option value="Loss">Loss</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="col-12">
-                                                <small class="text-muted">Enter stats based on player position (use 0 for irrelevant fields):</small>
-                                            </div>
-
-                                            <div class="col-4"><input type="number" name="passing_yards" class="form-control form-control-sm" placeholder="Pass Yds" value="0"></div>
-                                            <div class="col-4"><input type="number" name="rushing_yards" class="form-control form-control-sm" placeholder="Rush Yds" value="0"></div>
-                                            <div class="col-4"><input type="number" name="receiving_yards" class="form-control form-control-sm" placeholder="Rec Yds" value="0"></div>
-
-                                            <div class="col-4"><input type="number" name="pass_tds" class="form-control form-control-sm" placeholder="Pass TDs" value="0"></div>
-                                            <div class="col-4"><input type="number" name="rush_tds" class="form-control form-control-sm" placeholder="Rush TDs" value="0"></div>
-                                            <div class="col-4"><input type="number" name="receiving_tds" class="form-control form-control-sm" placeholder="Rec TDs" value="0"></div>
-
-                                            <div class="col-4"><input type="number" name="interceptions" class="form-control form-control-sm" placeholder="INTs" value="0"></div>
-                                            <div class="col-4"><input type="number" name="receptions" class="form-control form-control-sm" placeholder="Receptions" value="0"></div>
-                                            <div class="col-4"><input type="number" name="fumbles" class="form-control form-control-sm" placeholder="Fumbles" value="0"></div>
-
-                                        </div>
-                                        <button type="submit" class="btn btn-primary mt-3 w-100">Add Player Game Stats</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
 
                         <div class="col-md-6">
                             <div class="card mb-3">

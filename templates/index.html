@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFL Stats Manager</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background-color: #f4f6f9; }
@@ -28,7 +26,6 @@
 
 <div class="container">
 
-    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -40,7 +37,6 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Main Navigation Tabs -->
     <ul class="nav nav-pills nav-fill mb-4" id="mainTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link {% if not active_tab or active_tab == 'stats' %}active{% endif %}" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats-content" type="button">
@@ -66,7 +62,6 @@
 
     <div class="tab-content" id="mainTabContent">
         
-        <!-- ================= STATS TAB ================= -->
         <div class="tab-pane fade {% if not active_tab or active_tab == 'stats' %}show active{% endif %}" id="stats-content">
             <div class="row mb-4">
                 <div class="col-md-12">
@@ -121,12 +116,7 @@
                                     <tbody>
                                         {% for row in stats_data %}
                                         <tr>
-                                            <td>{{ row[0] }}</td> <!-- Coach Name -->
-                                            <td>{{ row[1] }}</td> <!-- Team -->
-                                            <td>{{ row[2] }}</td> <!-- Wins -->
-                                            <td>{{ row[3] }}</td> <!-- Losses -->
-                                            <td>{{ row[4] }}</td> <!-- Super Bowl Wins -->
-                                        </tr>
+                                            <td>{{ row[0] }}</td> <td>{{ row[1] }}</td> <td>{{ row[2] }}</td> <td>{{ row[3] }}</td> <td>{{ row[4] }}</td> </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
@@ -135,7 +125,6 @@
                     </div>
 
                 {% elif stat_type == 'division_winners' %}
-                <!-- ===================== DIVISION WINNERS CARD LAYOUT ===================== -->
                 <div class="row mt-3">
 
                     {% for row in stats_data %}
@@ -162,8 +151,6 @@
                     {% endfor %}
 
                 </div>
-                <!-- ======================================================================= -->
-
                 {% else %}
 
                 <div class="card">
@@ -221,7 +208,6 @@
             {% endif %}
         </div>
 
-        <!-- ================= TEAM TAB ================= -->
         <div class="tab-pane fade {% if active_tab == 'team' %}show active{% endif %}" id="team-content">
             <div class="row justify-content-center mb-4">
                 <div class="col-md-6">
@@ -239,7 +225,6 @@
 
             {% if team_searched %}
             <div class="row">
-                <!-- Record Card -->
                 <div class="col-md-4">
                     <div class="card text-center bg-light">
                         <div class="card-body">
@@ -249,7 +234,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Schedule Table -->
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header bg-secondary text-white">Season Schedule</div>
@@ -283,7 +267,6 @@
             {% endif %}
         </div>
 
-        <!-- ================= PLAYER TAB ================= -->
         <div class="tab-pane fade {% if active_tab == 'player' %}show active{% endif %}" id="player-content">
             <div class="row justify-content-center mb-4">
                 <div class="col-md-6">
@@ -296,7 +279,6 @@
 
             {% if player_search_result %}
             <div class="row">
-                <!-- Player Info & Career Stats -->
                 <div class="col-md-4">
     <div class="card">
         <div class="card-body text-center">
@@ -370,7 +352,6 @@
     </div>
 </div>
 
-                <!-- Matchup History -->
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">Matchup History</div>
@@ -431,12 +412,10 @@
 
         </div>
 
-        <!-- ================= ADMIN TAB ================= -->
         <div class="tab-pane fade" id="admin-content">
             <div class="row">
-                <!-- ADD PLAYER FORM -->
                 <div class="col-md-6">
-                    <div class="card border-success h-100">
+                    <div class="card border-success h-100 mb-3">
                         <div class="card-header bg-success text-white">Add New Player</div>
                         <div class="card-body">
                             <form action="/add_player" method="POST">
@@ -446,7 +425,6 @@
                                     <div class="col-4"><input type="text" name="team" class="form-control" placeholder="Team" required maxlength="3"></div>
                                     <div class="col-4"><input type="text" name="position" class="form-control" placeholder="Pos" required></div>
                                     <div class="col-4"><input type="number" name="season" class="form-control" value="2024"></div>
-                                    <!-- Optional fields hidden or simplified for demo -->
                                     <div class="col-6"><input type="number" name="height" class="form-control" placeholder="Height (in)"></div>
                                     <div class="col-6"><input type="number" name="weight" class="form-control" placeholder="Weight (lbs)"></div>
                                 </div>
@@ -456,46 +434,116 @@
                     </div>
                 </div>
 
-                <!-- UPDATE / DELETE -->
                 <div class="col-md-6">
-                    <!-- Update -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-warning text-dark">Update Player</div>
+                    <div class="card border-info h-100 mb-3">
+                        <div class="card-header bg-info text-white">Add New Game</div>
                         <div class="card-body">
-                            <form action="/update_player" method="POST" class="row g-2 align-items-center">
-                                <div class="col-12">
-                                    <input type="text" name="player_id" class="form-control" placeholder="Player ID to Update" required>
+                            <form action="/add_game" method="POST">
+                                <div class="row g-2">
+                                    <div class="col-6"><input type="text" name="home_team" class="form-control" placeholder="Home Team (e.g., KC)" required maxlength="3"></div>
+                                    <div class="col-6"><input type="text" name="away_team" class="form-control" placeholder="Away Team (e.g., SF)" required maxlength="3"></div>
+                                    <div class="col-4"><input type="number" name="home_score" class="form-control" placeholder="Home Score" required></div>
+                                    <div class="col-4"><input type="number" name="away_score" class="form-control" placeholder="Away Score" required></div>
+                                    <div class="col-4"><input type="number" name="season" class="form-control" value="2024" placeholder="Season Year" required></div>
+                                    <div class="col-6">
+                                        <select name="season_type" class="form-select" required>
+                                            <option value="" disabled selected>Select Type</option>
+                                            <option value="REG">Regular Season</option>
+                                            <option value="POST">Playoffs</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6"><input type="number" name="week" class="form-control" placeholder="Week Number" required></div>
                                 </div>
-                                <div class="col-4">
-                                    <select name="update_action" class="form-select">
-                                        <option value="team">Move Team</option>
-                                        <option value="position">Change Pos</option>
-                                        <option value="weight">Set Weight</option>
-                                    </select>
-                                </div>
-                                <div class="col-8">
-                                    <input type="text" name="new_value" class="form-control" placeholder="New Value" required>
-                                </div>
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-warning w-100">Update</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Delete -->
-                    <div class="card border-danger">
-                        <div class="card-header bg-danger text-white">Delete Player</div>
-                        <div class="card-body">
-                            <form action="/delete_player" method="POST" onsubmit="return confirm('Are you sure? This deletes stats and history.');">
-                                <div class="input-group">
-                                    <input type="text" name="player_id" class="form-control" placeholder="Player ID to Delete" required>
-                                    <button class="btn btn-danger" type="submit">Delete</button>
-                                </div>
+                                <button type="submit" class="btn btn-info mt-3 w-100">Add Game</button>
                             </form>
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-12 mt-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary mb-3">
+                                <div class="card-header bg-primary text-white">Add Game Stats (Player Matchup)</div>
+                                <div class="card-body">
+                                    <form action="/add_game_stats" method="POST">
+                                        <div class="row g-2">
+                                            <div class="col-6"><input type="text" name="player_id" class="form-control" placeholder="Player ID (e.g., 00-12345)" required></div>
+                                            <div class="col-6"><input type="text" name="opponent_team" class="form-control" placeholder="Opponent Team (e.g., NE)" required maxlength="3"></div>
+                                            <div class="col-4"><input type="number" name="season" class="form-control" value="2024" placeholder="Season Year" required></div>
+                                            <div class="col-4"><input type="number" name="week" class="form-control" placeholder="Week" required></div>
+                                            <div class="col-4">
+                                                <select name="game_result" class="form-select" required>
+                                                    <option value="" disabled selected>Result</option>
+                                                    <option value="Win">Win</option>
+                                                    <option value="Loss">Loss</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <small class="text-muted">Enter stats based on player position (use 0 for irrelevant fields):</small>
+                                            </div>
+
+                                            <div class="col-4"><input type="number" name="passing_yards" class="form-control form-control-sm" placeholder="Pass Yds" value="0"></div>
+                                            <div class="col-4"><input type="number" name="rushing_yards" class="form-control form-control-sm" placeholder="Rush Yds" value="0"></div>
+                                            <div class="col-4"><input type="number" name="receiving_yards" class="form-control form-control-sm" placeholder="Rec Yds" value="0"></div>
+
+                                            <div class="col-4"><input type="number" name="pass_tds" class="form-control form-control-sm" placeholder="Pass TDs" value="0"></div>
+                                            <div class="col-4"><input type="number" name="rush_tds" class="form-control form-control-sm" placeholder="Rush TDs" value="0"></div>
+                                            <div class="col-4"><input type="number" name="receiving_tds" class="form-control form-control-sm" placeholder="Rec TDs" value="0"></div>
+
+                                            <div class="col-4"><input type="number" name="interceptions" class="form-control form-control-sm" placeholder="INTs" value="0"></div>
+                                            <div class="col-4"><input type="number" name="receptions" class="form-control form-control-sm" placeholder="Receptions" value="0"></div>
+                                            <div class="col-4"><input type="number" name="fumbles" class="form-control form-control-sm" placeholder="Fumbles" value="0"></div>
+
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mt-3 w-100">Add Player Game Stats</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-warning text-dark">Update Player</div>
+                                <div class="card-body">
+                                    <form action="/update_player" method="POST" class="row g-2 align-items-center">
+                                        <div class="col-12">
+                                            <input type="text" name="player_id" class="form-control" placeholder="Player ID to Update" required>
+                                        </div>
+                                        <div class="col-4">
+                                            <select name="update_action" class="form-select">
+                                                <option value="team">Move Team</option>
+                                                <option value="position">Change Pos</option>
+                                                <option value="weight">Set Weight</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="text" name="new_value" class="form-control" placeholder="New Value" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-warning w-100">Update</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">Delete Player</div>
+                                <div class="card-body">
+                                    <form action="/delete_player" method="POST" onsubmit="return confirm('Are you sure? This deletes stats and history.');">
+                                        <div class="input-group">
+                                            <input type="text" name="player_id" class="form-control" placeholder="Player ID to Delete" required>
+                                            <button class="btn btn-danger" type="submit">Delete</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
         </div>
 
@@ -504,7 +552,6 @@
 
 
 
-<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
